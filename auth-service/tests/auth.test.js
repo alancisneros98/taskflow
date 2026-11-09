@@ -1,6 +1,21 @@
 const request = require('supertest');
 const app = require('../src/app');
 
+//se inicializa la base de datos antes de correr los tests
+const { pool, initDb } = require('../src/db');
+
+beforeAll(async () => {
+  await initDb();
+});
+
+beforeEach(async () => {
+  await pool.query('TRUNCATE TABLE users RESTART IDENTITY');
+});
+
+afterAll(async () => {
+  await pool.end();
+});
+
 describe('Auth Service', () => {
 
   describe('GET /health', () => {

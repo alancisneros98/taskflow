@@ -1,26 +1,15 @@
-const express = require('express');
-const dotenv = require('dotenv');
-
-dotenv.config();
-
-const app = express();
-app.use(express.json());
-
-// Rutas
-const authRoutes = require('./routes/auth.routes');
-app.use('/auth', authRoutes);
-
-// Health check — importante para Docker saber si el servicio está vivo
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', service: 'auth-service' });
-});
+const app = require('./app');
+const { initDb } = require('./db');
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`auth-service corriendo en puerto ${PORT}`);
-});const app = require('./app');
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`auth-service corriendo en puerto ${PORT}`);
-});
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`auth-service corriendo en puerto ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('No se pudo conectar a la base de datos:', err.message);
+    process.exit(1);
+  });
