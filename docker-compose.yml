@@ -7,15 +7,15 @@ services:
     ports:
       - "5432:5432" 
     environment:
-      POSTGRES_USER: authuser
-      POSTGRES_PASSWORD: authpass
-      POSTGRES_DB: authdb
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
     volumes:
       - auth-db-data:/var/lib/postgresql/data
     networks:
       - taskflow-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER} -d ${AUTH_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,15 +25,15 @@ services:
     image: postgres:16-alpine
     container_name: tasks-db
     environment:
-      POSTGRES_USER: tasksuser
-      POSTGRES_PASSWORD: taskspass
-      POSTGRES_DB: tasksdb
+      POSTGRES_USER: ${TASKS_DB_USER}
+      POSTGRES_PASSWORD: ${TASKS_DB_PASSWORD}
+      POSTGRES_DB: ${TASKS_DB_NAME}
     volumes:
       - tasks-db-data:/var/lib/postgresql/data
     networks:
       - taskflow-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tasksuser -d tasksdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${TASKS_DB_USER} -d ${TASKS_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -46,8 +46,8 @@ services:
       - "5672:5672"   # puerto de mensajería
       - "15672:15672" # panel de administración web
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     networks:
       - taskflow-network
     healthcheck:
@@ -64,12 +64,12 @@ services:
       - "3001:3001"
     environment:
       PORT: 3001
-      JWT_SECRET: taskflow_super_secret_key
+      JWT_SECRET: ${JWT_SECRET}
       DB_HOST: auth-db
       DB_PORT: 5432
-      DB_USER: authuser
-      DB_PASSWORD: authpass
-      DB_NAME: authdb
+      DB_USER: ${AUTH_DB_USER}
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_NAME: ${AUTH_DB_NAME}
     depends_on:
       auth-db:
         condition: service_healthy
@@ -85,7 +85,7 @@ services:
       - "3003:3003"
     environment:
       PORT: 3003
-      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -101,8 +101,8 @@ services:
       - "3002:3002"
     environment:
       ASPNETCORE_URLS: http://+:3002
-      ConnectionStrings__DefaultConnection: "Host=tasks-db;Port=5432;Database=tasksdb;Username=tasksuser;Password=taskspass"
-      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672  
+      ConnectionStrings__DefaultConnection: "Host=tasks-db;Port=5432;Database=${TASKS_DB_NAME};Username=${TASKS_DB_USER};Password=${TASKS_DB_PASSWORD}"
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
     depends_on:
       tasks-db:
         condition: service_healthy
@@ -119,7 +119,7 @@ services:
       - "3000:3000"
     environment:
       PORT: 3000
-      JWT_SECRET: taskflow_super_secret_key
+      JWT_SECRET: ${JWT_SECRET}
       AUTH_SERVICE_URL: http://auth-service:3001
       TASKS_SERVICE_URL: http://tasks-service:3002
       NOTIFICATIONS_SERVICE_URL: http://notifications-service:3003

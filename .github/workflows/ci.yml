@@ -34,6 +34,7 @@ jobs:
       DB_USER: authuser
       DB_PASSWORD: authpass
       DB_NAME: authdb
+      JWT_SECRET: secreto_solo_para_tests
 
     steps:
       - name: Checkout código

@@ -9,6 +9,11 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET no está definido');
+  process.exit(1);
+}
+
 // ── Rate limiting ─────────────────────────────────────────────────
 // Máximo 100 requests por IP cada 15 minutos
 const limiter = rateLimit({
