@@ -22,7 +22,7 @@ const verifyToken = (req, res, next) => {
     return res.status(401).json({ error: 'Token requerido' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'taskflow_super_secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // Pasamos el userId a los servicios internos via header
     req.headers['x-user-id'] = decoded.id;
     req.headers['x-user-email'] = decoded.email;

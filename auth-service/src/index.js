@@ -1,6 +1,11 @@
 const app = require('./app');
 const { initDb } = require('./db');
 
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET no está definido');
+  process.exit(1);
+}
+
 const PORT = process.env.PORT || 3001;
 
 initDb()

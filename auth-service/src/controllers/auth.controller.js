@@ -5,7 +5,7 @@ const { pool } = require('../db');
 const generateToken = (user) =>
   jwt.sign(
     { id: user.id, email: user.email },
-    process.env.JWT_SECRET || 'secret_temporal',
+    process.env.JWT_SECRET,
     { expiresIn: '24h' }
   );
 
