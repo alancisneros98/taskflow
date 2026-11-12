@@ -22,35 +22,42 @@ public class TasksController : ControllerBase
         _publisher = publisher;
     }
 
-    // GET /tasks?userId=1
-    [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int? userId)
+    // El gateway valida el JWT y coloca el id del usuario en este header.
+    private bool TryGetUserId(out int userId)
     {
-        var query = _db.Tasks.AsQueryable();
+        userId = 0;
+        return Request.Headers.TryGetValue("x-user-id", out var value)
+            && int.TryParse(value.FirstOrDefault(), out userId);
+    }
 
-        if (userId.HasValue)
-            query = query.Where(t => t.UserId == userId.Value);
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
 
-        var tasks = await query
+        var tasks = await _db.Tasks
+            .Where(t => t.UserId == userId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
 
         return Ok(tasks);
     }
 
-    // GET /tasks/1
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var task = await _db.Tasks.FindAsync(id);
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (task is null) return NotFound(new { error = "Tarea no encontrada" });
         return Ok(task);
     }
 
-    // POST /tasks
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTaskDto dto)
     {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
         if (string.IsNullOrWhiteSpace(dto.Title))
             return BadRequest(new { error = "El título es requerido" });
 
@@ -58,7 +65,7 @@ public class TasksController : ControllerBase
         {
             Title = dto.Title,
             Description = dto.Description,
-            UserId = dto.UserId
+            UserId = userId
         };
 
         _db.Tasks.Add(task);
@@ -71,11 +78,12 @@ public class TasksController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
 
-    // PUT /tasks/1
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateTaskDto dto)
     {
-        var task = await _db.Tasks.FindAsync(id);
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (task is null) return NotFound(new { error = "Tarea no encontrada" });
 
         if (dto.Title is not null) task.Title = dto.Title;
@@ -90,11 +98,12 @@ public class TasksController : ControllerBase
         return Ok(task);
     }
 
-    // DELETE /tasks/1
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var task = await _db.Tasks.FindAsync(id);
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (task is null) return NotFound(new { error = "Tarea no encontrada" });
 
         _db.Tasks.Remove(task);

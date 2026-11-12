@@ -2,8 +2,7 @@ namespace TasksService.DTOs;
 
 public record CreateTaskDto(
     string Title,
-    string Description,
-    int UserId
+    string Description
 );
 
 public record UpdateTaskDto(

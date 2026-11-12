@@ -1,5 +1,7 @@
-### 1. Registrar usuario
-POST http://localhost:3000/api/auth/register
+@baseUrl = http://localhost:3000
+
+### 1. Registrar usuario A
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
@@ -8,8 +10,19 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### 2. Login — copia el token de la respuesta
-POST http://localhost:3000/api/auth/login
+### 2. Registrar usuario B
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Pedro",
+  "email": "pedro@test.com",
+  "password": "123456"
+}
+
+### 3. Login A (guarda el token en una variable)
+# @name loginA
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
@@ -17,20 +30,43 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### 3. Crear tarea — pega tu token aquí
-POST http://localhost:3000/api/tasks
+### 4. Login B
+# @name loginB
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
-Authorization: Bearer TU_TOKEN_AQUI
 
 {
-  "title": "Aprender Docker",
-  "description": "Completar el proyecto TaskFlow",
-  "userId": 1
+  "email": "pedro@test.com",
+  "password": "123456"
 }
 
-### 4. Ver tareas
-GET http://localhost:3000/api/tasks?userId=1
-Authorization: Bearer TU_TOKEN_AQUI
+### 5. A crea una tarea
+@tokenA = {{loginA.response.body.token}}
+POST {{baseUrl}}/api/tasks
+Content-Type: application/json
+Authorization: Bearer {{tokenA}}
 
-### 5. Intentar sin token — debe dar 401
-GET http://localhost:3000/api/tasks
+{
+  "title": "Tarea privada de A",
+  "description": "Solo A debe verla"
+}
+
+### 6. A ve sus tareas
+GET {{baseUrl}}/api/tasks
+Authorization: Bearer {{tokenA}}
+
+### 7. B ve sus tareas (debe ser lista vacía)
+@tokenB = {{loginB.response.body.token}}
+GET {{baseUrl}}/api/tasks
+Authorization: Bearer {{tokenB}}
+
+### 8. B intenta leer la tarea de A (debe dar 404)
+GET {{baseUrl}}/api/tasks/1
+Authorization: Bearer {{tokenB}}
+
+### 9. B intenta borrar la tarea de A (debe dar 404)
+DELETE {{baseUrl}}/api/tasks/1
+Authorization: Bearer {{tokenB}}
+
+### 10. Sin token (debe dar 401)
+GET {{baseUrl}}/api/tasks
