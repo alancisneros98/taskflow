@@ -97,8 +97,6 @@ services:
   tasks-service:
     build: ./tasks-service
     container_name: tasks-service
-    ports:
-      - "3002:3002"
     environment:
       ASPNETCORE_URLS: http://+:3002
       ConnectionStrings__DefaultConnection: "Host=tasks-db;Port=5432;Database=${TASKS_DB_NAME};Username=${TASKS_DB_USER};Password=${TASKS_DB_PASSWORD}"

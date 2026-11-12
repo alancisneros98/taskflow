@@ -7,7 +7,6 @@ const { verifyToken } = require('./middleware/auth.middleware');
 dotenv.config();
 
 const app = express();
-app.use(express.json());
 
 if (!process.env.JWT_SECRET) {
   console.error('JWT_SECRET no está definido');
@@ -43,9 +42,10 @@ const TASKS_SERVICE_URL = process.env.TASKS_SERVICE_URL || 'http://tasks-service
 const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://notifications-service:3003';
 
 // /api/auth/* → auth-service
-app.use('/api/auth', createProxyMiddleware({
+app.use(createProxyMiddleware({
   target: AUTH_SERVICE_URL,
   changeOrigin: true,
+  pathFilter: '/api/auth',
   pathRewrite: { '^/api/auth': '/auth' },
   on: {
     error: (err, req, res) => {
@@ -56,9 +56,10 @@ app.use('/api/auth', createProxyMiddleware({
 }));
 
 // /api/tasks/* → tasks-service
-app.use('/api/tasks', createProxyMiddleware({
+app.use(createProxyMiddleware({
   target: TASKS_SERVICE_URL,
   changeOrigin: true,
+  pathFilter: '/api/tasks',
   pathRewrite: { '^/api/tasks': '/tasks' },
   on: {
     error: (err, req, res) => {
@@ -69,9 +70,10 @@ app.use('/api/tasks', createProxyMiddleware({
 }));
 
 // /api/notifications/* → notifications-service
-app.use('/api/notifications', createProxyMiddleware({
+app.use(createProxyMiddleware({
   target: NOTIFICATIONS_SERVICE_URL,
   changeOrigin: true,
+  pathFilter: '/api/notifications',
   pathRewrite: { '^/api/notifications': '' },
   on: {
     error: (err, req, res) => {
