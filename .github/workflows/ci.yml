@@ -75,15 +75,15 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restaurar dependencias
-        working-directory: tasks-service
+        working-directory: tasks-service-tests
         run: dotnet restore
 
       - name: Build
-        working-directory: tasks-service
+        working-directory: tasks-service-tests
         run: dotnet build --no-restore
 
       - name: Correr tests
-        working-directory: tasks-service
+        working-directory: tasks-service-tests
         run: dotnet test --no-build
 
   # ── Job 3: Build y push de imágenes Docker ────────────────────────

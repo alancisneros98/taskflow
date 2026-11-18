@@ -13,14 +13,14 @@ public class TasksController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly ILogger<TasksController> _logger;
-    private readonly RabbitMQPublisher _publisher;
+    private readonly IEventPublisher _publisher;
 
-    public TasksController(AppDbContext db, ILogger<TasksController> logger, RabbitMQPublisher publisher)
-    {
-        _db = db;
-        _logger = logger;
-        _publisher = publisher;
-    }
+public TasksController(AppDbContext db, ILogger<TasksController> logger, IEventPublisher publisher)
+{
+    _db = db;
+    _logger = logger;
+    _publisher = publisher;
+}
 
     // El gateway valida el JWT y coloca el id del usuario en este header.
     private bool TryGetUserId(out int userId)

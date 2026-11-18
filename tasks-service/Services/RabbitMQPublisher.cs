@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace TasksService.Services;
 
-public class RabbitMQPublisher : IDisposable
+public class RabbitMQPublisher : IEventPublisher, IDisposable
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
